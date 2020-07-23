@@ -220,7 +220,7 @@ if __name__ == '__main__':
     
     # wandb logging and demo
     parser.add_argument('-m', '--model_name', type=str, default="")
-    parser.add_argument('-s', '--custom_src', type=str, default='stragan-v2/assets/representative/afhq/src') #assets/representative/afhq/src/cat/pixabay_cat_004826.jpg')
+    parser.add_argument('-s', '--custom_src', type=str, default='stargan-v2/assets/representative/afhq/src') #assets/representative/afhq/src/cat/pixabay_cat_004826.jpg')
     parser.add_argument('-r', '--custom_ref', type=str, default='stargan-v2/assets/representative/afhq/ref') #wild/flickr_wild_003969.jpg')
     parser.add_argument('-o', '--custom_out_img', type=str, default='starganv2_cross.jpg')
   
