@@ -83,21 +83,28 @@ def main(args):
         align_faces(args, args.inp_dir, args.out_dir)
     elif args.mode == 'custom':
         wandb.init(project="stargan", config=args)
+        # src or ref may each be a dir or an image
         # make temporary folders for images
-        src_dir = "tmp_src"
-        ref_dir = "tmp_ref"
-        full_src = src_dir + "/src"
-        full_ref = ref_dir + "/ref"
-        for d in [src_dir, ref_dir]:
-            if os.path.exists(d):
-                shutil.rmtree(d)
-            os.makedirs(d)
-        # add nested structure
-        os.mkdir(src_dir + "/src")
-        os.mkdir(ref_dir + "/ref")
-
-        shutil.copy2(args.custom_src_img, full_src)
-        shutil.copy2(args.custom_ref_img, full_ref)
+        if os.path.isfile(args.custom_src):
+            src_dir = "tmp_src"
+            full_src = src_dir + "/src"
+            if os.path.exists(src_dir):
+                 shutil.rmtree(src_dir)
+            os.makedirs(full_src)
+            shutil.copy2(args.custom_src, full_src)
+            src_images = src_dir
+        else:
+						src_images = args.custom_src
+        if os.path.isfile(args.custom_ref):
+ 						ref_dir = "tmp_ref"
+            full_ref = ref_dir + "/ref"
+            if os.path.exists(ref_dir):
+                shutil.rmtree(ref_dir)
+            os.makedirs(full_ref)
+            shutil.copy2(args.custom_ref, full_ref)
+            ref_images = ref_dir
+        else:
+            ref_images = args.custom_ref     
         loaders = Munch(src=get_test_loader(root=src_dir,
                                             img_size=args.img_size,
                                             batch_size=args.val_batch_size,
@@ -213,8 +220,8 @@ if __name__ == '__main__':
     
     # wandb logging and demo
     parser.add_argument('-m', '--model_name', type=str, default="")
-    parser.add_argument('-s', '--custom_src_img', type=str, default='assets/representative/afhq/src/cat/pixabay_cat_004826.jpg')
-    parser.add_argument('-r', '--custom_ref_img', type=str, default='assets/representative/afhq/ref/wild/flickr_wild_003969.jpg')
+    parser.add_argument('-s', '--custom_src', type=str, default='assets/representative/afhq/src') #assets/representative/afhq/src/cat/pixabay_cat_004826.jpg')
+    parser.add_argument('-r', '--custom_ref', type=str, default='assets/representative/afhq/ref') #wild/flickr_wild_003969.jpg')
     parser.add_argument('-o', '--custom_out_img', type=str, default='starganv2_cross.jpg')
   
     args = parser.parse_args()
