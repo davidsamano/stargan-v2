@@ -98,7 +98,7 @@ def main(args):
                                             batch_size=args.val_batch_size,
                                             shuffle=False,
                                             num_workers=args.num_workers))
-        solver.custom(args, loaders)
+        solver.custom(loaders)
     else:
         raise NotImplementedError
 
