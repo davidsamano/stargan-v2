@@ -83,9 +83,6 @@ def main(args):
         align_faces(args, args.inp_dir, args.out_dir)
     elif args.mode == 'custom':
         # override some default arguments
-        args.num_domains = 3
-        args.w_hpf = 0
-        args.checkpoint_dir = "stargan-v2/expr/checkpoints/afhq"
         wandb.init(project="stargan", config=args, name=args.model_name)
         # src or ref may each be a dir or an image
         # make temporary folders for images
@@ -135,7 +132,7 @@ if __name__ == '__main__':
     # model arguments
     parser.add_argument('--img_size', type=int, default=256,
                         help='Image resolution')
-    parser.add_argument('--num_domains', type=int, default=2,
+    parser.add_argument('--num_domains', type=int, default=3,
                         help='Number of domains')
     parser.add_argument('--latent_dim', type=int, default=16,
                         help='Latent vector dimension')
@@ -155,7 +152,7 @@ if __name__ == '__main__':
                         help='Weight for diversity sensitive loss')
     parser.add_argument('--ds_iter', type=int, default=100000,
                         help='Number of iterations to optimize diversity sensitive loss')
-    parser.add_argument('--w_hpf', type=float, default=1,
+    parser.add_argument('--w_hpf', type=float, default=0,
                         help='weight for high-pass filtering')
 
     # training arguments
@@ -163,11 +160,11 @@ if __name__ == '__main__':
                         help='Probabilty of using random-resized cropping')
     parser.add_argument('--total_iters', type=int, default=100000,
                         help='Number of total iterations')
-    parser.add_argument('--resume_iter', type=int, default=0,
+    parser.add_argument('--resume_iter', type=int, default=100000,
                         help='Iterations to resume training/testing')
     parser.add_argument('--batch_size', type=int, default=4,
                         help='Batch size for training')
-    parser.add_argument('--val_batch_size', type=int, default=4,
+    parser.add_argument('--val_batch_size', type=int, default=32,
                         help='Batch size for validation')
     parser.add_argument('--lr', type=float, default=1e-4,
                         help='Learning rate for D, E and G')
@@ -198,7 +195,7 @@ if __name__ == '__main__':
                         help='Directory containing validation images')
     parser.add_argument('--sample_dir', type=str, default='expr/samples',
                         help='Directory for saving generated images')
-    parser.add_argument('--checkpoint_dir', type=str, default='expr/checkpoints',
+    parser.add_argument('--checkpoint_dir', type=str, default='stargan-v2/expr/checkpoints/afhq',
                         help='Directory for saving network checkpoints')
 
     # directory for calculating metrics
@@ -218,7 +215,7 @@ if __name__ == '__main__':
                         help='output directory when aligning faces')
 
     # face alignment
-    parser.add_argument('--wing_path', type=str, default='expr/checkpoints/wing.ckpt')
+    parser.add_argument('--wing_path', type=str, default='stargan-v2/expr/checkpoints/wing.ckpt')
     parser.add_argument('--lm_path', type=str, default='expr/checkpoints/celeba_lm_mean.npz')
 
     # step size
@@ -232,7 +229,7 @@ if __name__ == '__main__':
     parser.add_argument('-s', '--custom_src', type=str, default='stargan-v2/assets/representative/afhq/src') #assets/representative/afhq/src/cat/pixabay_cat_004826.jpg')
     parser.add_argument('-r', '--custom_ref', type=str, default='stargan-v2/assets/representative/afhq/ref') #wild/flickr_wild_003969.jpg')
     parser.add_argument('-o', '--custom_out_img', type=str, default='starganv2_cross.jpg')
-    parser.add_argument('-x', '--extend_domain', type=int, default=0)
+    parser.add_argument('-x', '--extend_domain', type=int, default=1)
  
     args = parser.parse_args()
     main(args)
