@@ -82,6 +82,10 @@ def main(args):
         from core.wing import align_faces
         align_faces(args, args.inp_dir, args.out_dir)
     elif args.mode == 'custom':
+        # override some default arguments
+        args.num_domains = 3
+        args.w_hpf = 0
+        args.checkpoint_dir = "stargan-v2/expr/checkpoints/afhq"
         wandb.init(project="stargan", config=args, name=args.model_name)
         # src or ref may each be a dir or an image
         # make temporary folders for images
