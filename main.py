@@ -84,12 +84,16 @@ def main(args):
     elif args.mode == 'custom':
         wandb.init(project="stargan", config=args)
         # make temporary folders for images
-        src_dir = "tmp_src/src"
-        ref_dir = "tmp_ref/ref" 
+        src_dir = "tmp_src"
+        ref_dir = "tmp_ref"
         for d in [src_dir, ref_dir]:
             if os.path.exists(d):
                 shutil.rmtree(d)
             os.makedirs(d)
+        # add nested structure
+        os.mkdir(src_dir + "/src")
+        os.mkdir(ref_dir + "/ref")
+
         shutil.copy2(args.custom_src_img, src_dir)
         shutil.copy2(args.custom_ref_img, ref_dir)
         loaders = Munch(src=get_test_loader(root=src_dir,
