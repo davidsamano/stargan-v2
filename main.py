@@ -92,11 +92,6 @@ def main(args):
                 shutil.rmtree(src_dir)
             os.makedirs(full_src)
             shutil.copy2(args.custom_src, full_src)
-            if args.extend_domain:
-                # make some extra domains
-                for d in [src_dir + "/src2", src_dir+"/src3"]:
-                    os.makedirs(d)
-                    shutil.copy2(args.custom_src, d)
             src_images = src_dir
         else:
             src_images = args.custom_src
