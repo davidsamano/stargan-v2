@@ -105,12 +105,12 @@ def main(args):
             ref_images = ref_dir
         else:
             ref_images = args.custom_ref     
-        loaders = Munch(src=get_test_loader(root=src_dir,
+        loaders = Munch(src=get_test_loader(root=src_images,
                                             img_size=args.img_size,
                                             batch_size=args.val_batch_size,
                                             shuffle=False,
                                             num_workers=args.num_workers),
-                        ref=get_test_loader(root=ref_dir, 
+                        ref=get_test_loader(root=ref_images, 
                                             img_size=args.img_size,
                                             batch_size=args.val_batch_size,
                                             shuffle=False,
