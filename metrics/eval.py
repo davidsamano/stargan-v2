@@ -21,6 +21,7 @@ from metrics.lpips import calculate_lpips_given_images
 from core.data_loader import get_eval_loader
 from core import utils
 
+import wandb
 
 @torch.no_grad()
 def calculate_metrics(nets, args, step, mode):
@@ -110,7 +111,8 @@ def calculate_metrics(nets, args, step, mode):
     for _, value in lpips_dict.items():
         lpips_mean += value / len(lpips_dict)
     lpips_dict['LPIPS_%s/mean' % mode] = lpips_mean
-
+    wandb.log(lpips_dict, commit=False)
+  
     # report LPIPS values
     filename = os.path.join(args.eval_dir, 'LPIPS_%.5i_%s.json' % (step, mode))
     utils.save_json(lpips_dict, filename)
@@ -141,7 +143,7 @@ def calculate_fid_for_all_tasks(args, domains, step, mode):
     for _, value in fid_values.items():
         fid_mean += value / len(fid_values)
     fid_values['FID_%s/mean' % mode] = fid_mean
-
+    wandb.log(fid_values, commit=False)
     # report FID values
     filename = os.path.join(args.eval_dir, 'FID_%.5i_%s.json' % (step, mode))
     utils.save_json(fid_values, filename)

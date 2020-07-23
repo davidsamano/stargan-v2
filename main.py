@@ -12,6 +12,7 @@ import os
 import argparse
 
 from munch import Munch
+import shutil
 from torch.backends import cudnn
 import torch
 
@@ -19,6 +20,7 @@ from core.data_loader import get_train_loader
 from core.data_loader import get_test_loader
 from core.solver import Solver
 
+import wandb
 
 def str2bool(v):
     return v.lower() in ('true')
@@ -31,6 +33,9 @@ def subdirs(dname):
 
 def main(args):
     print(args)
+    wandb.init(project="stargan", entity="stacey", config=args, name=args.model_name)
+    cfg = wandb.config
+    cfg.update({"dataset" : "afhq", "type" : "train"})
     cudnn.benchmark = True
     torch.manual_seed(args.seed)
 
@@ -72,10 +77,26 @@ def main(args):
                                             num_workers=args.num_workers))
         solver.sample(loaders)
     elif args.mode == 'eval':
-        solver.evaluate()
+        solver.evaluate(args)
     elif args.mode == 'align':
         from core.wing import align_faces
         align_faces(args, args.inp_dir, args.out_dir)
+    elif args.mode == 'custom':
+        os.mkdir("tmp_src")
+        os.mkdir("tmp_ref")
+        shutil.copy2(args.custom_src_img, "tmp_src")
+        shutil.copy2(args.custom_ref_img, "tmp_ref")
+        loaders = Munch(src=get_test_loader(root="tmp_src",
+                                            img_size=args.img_size,
+                                            batch_size=args.val_batch_size,
+                                            shuffle=False,
+                                            num_workers=args.num_workers),
+                        ref=get_test_loader(root="tmp_ref", #args.custom_ref_img,
+                                            img_size=args.img_size,
+                                            batch_size=args.val_batch_size,
+                                            shuffle=False,
+                                            num_workers=args.num_workers))
+        solver.custom(args, loaders)
     else:
         raise NotImplementedError
 
@@ -116,9 +137,9 @@ if __name__ == '__main__':
                         help='Number of total iterations')
     parser.add_argument('--resume_iter', type=int, default=0,
                         help='Iterations to resume training/testing')
-    parser.add_argument('--batch_size', type=int, default=8,
+    parser.add_argument('--batch_size', type=int, default=4,
                         help='Batch size for training')
-    parser.add_argument('--val_batch_size', type=int, default=32,
+    parser.add_argument('--val_batch_size', type=int, default=4,
                         help='Batch size for validation')
     parser.add_argument('--lr', type=float, default=1e-4,
                         help='Learning rate for D, E and G')
@@ -174,9 +195,15 @@ if __name__ == '__main__':
 
     # step size
     parser.add_argument('--print_every', type=int, default=10)
-    parser.add_argument('--sample_every', type=int, default=5000)
-    parser.add_argument('--save_every', type=int, default=10000)
-    parser.add_argument('--eval_every', type=int, default=50000)
-
+    parser.add_argument('--sample_every', type=int, default=2000)
+    parser.add_argument('--save_every', type=int, default=5000)
+    parser.add_argument('--eval_every', type=int, default=10000)
+    
+    # wandb logging and demo
+    parser.add_argument('-m', '--model_name', type=str, default="")
+    parser.add_argument('-s', '--custom_src_img', type=str, default='assets/representative/afhq/src/cat/pixabay_cat_004826.jpg')
+    parser.add_argument('-r', '--custom_ref_img', type=str, default='assets/representative/afhq/ref/wild/flickr_wild_003969.jpg')
+    parser.add_argument('-o', '--custom_out_img', type=str, default='starganv2_cross.jpg')
+  
     args = parser.parse_args()
     main(args)

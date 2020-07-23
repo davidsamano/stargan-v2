@@ -24,6 +24,7 @@ from core.data_loader import InputFetcher
 import core.utils as utils
 from metrics.eval import calculate_metrics
 
+import wandb
 
 class Solver(nn.Module):
     def __init__(self, args):
@@ -141,7 +142,7 @@ class Solver(nn.Module):
             # decay weight for diversity sensitive loss
             if args.lambda_ds > 0:
                 args.lambda_ds -= (initial_lambda_ds / args.ds_iter)
-
+    
             # print out log info
             if (i+1) % args.print_every == 0:
                 elapsed = time.time() - start_time
@@ -155,6 +156,7 @@ class Solver(nn.Module):
                 all_losses['G/lambda_ds'] = args.lambda_ds
                 log += ' '.join(['%s: [%.4f]' % (key, value) for key, value in all_losses.items()])
                 print(log)
+                wandb.log(all_losses)
 
             # generate images for debugging
             if (i+1) % args.sample_every == 0:
@@ -189,6 +191,20 @@ class Solver(nn.Module):
         utils.video_ref(nets_ema, args, src.x, ref.x, ref.y, fname)
 
     @torch.no_grad()
+    def custom(self, loaders):
+        args = self.args
+        nets_ema = self.nets_ema
+        self._load_checkpoint(100000)
+
+        src = next(InputFetcher(loaders.src, None, args.latent_dim, 'test'))
+        ref = next(InputFetcher(loaders.ref, None, args.latent_dim, 'test'))
+
+        fname = args.custom_out_img 
+        print('Working on {}...'.format(fname))
+        utils.translate_using_reference(nets_ema, args, src.x, ref.x, ref.y, fname)
+
+
+    @torch.no_grad()
     def evaluate(self):
         args = self.args
         nets_ema = self.nets_ema
@@ -197,6 +213,8 @@ class Solver(nn.Module):
         calculate_metrics(nets_ema, args, step=resume_iter, mode='latent')
         calculate_metrics(nets_ema, args, step=resume_iter, mode='reference')
 
+    #@torch.no_grad()
+    #def generate(self,):
 
 def compute_d_loss(nets, args, x_real, y_org, y_trg, z_trg=None, x_ref=None, masks=None):
     assert (z_trg is None) != (x_ref is None)

@@ -19,6 +19,7 @@ import torch.nn.functional as F
 
 from core.wing import FAN
 
+import wandb
 
 class ResBlk(nn.Module):
     def __init__(self, dim_in, dim_out, actv=nn.LeakyReLU(0.2),
@@ -292,10 +293,12 @@ def build_model(args):
                  mapping_network=mapping_network,
                  style_encoder=style_encoder,
                  discriminator=discriminator)
+   
     nets_ema = Munch(generator=generator_ema,
                      mapping_network=mapping_network_ema,
                      style_encoder=style_encoder_ema)
 
+    #wandb.watch([generator, mapping_network, style_encoder, discriminator], log="all")
     if args.w_hpf > 0:
         fan = FAN(fname_pretrained=args.wing_path).eval()
         nets.fan = fan

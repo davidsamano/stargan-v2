@@ -23,7 +23,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torchvision
 import torchvision.utils as vutils
-
+import wandb
 
 def save_json(json_file, filename):
     with open(filename, 'w') as f:
@@ -54,9 +54,19 @@ def denormalize(x):
     return out.clamp_(0, 1)
 
 
-def save_image(x, ncol, filename):
+def save_image(x, ncol, filename, img_type=None):
     x = denormalize(x)
     vutils.save_image(x.cpu(), filename, nrow=ncol, padding=0)
+    if ncol != 1:  # ignore solo images from the evaluation phase
+        # extract caption
+        caption = filename.split("/")[-1].split(".")[0]
+        if img_type == "reference":
+            # these are the fixed grids, good for comparison across training time
+            wandb.log({"val_reference" : wandb.Image(filename, caption=caption)}, commit=False)
+        elif img_type == "cycle":
+            wandb.log({"cycle_consistency" : wandb.Image(filename, caption=caption)}, commit=False)
+        elif img_type == "latent":
+            wandb.log({"latent" : wandb.Image(filename, caption=caption)}, commit=False)
 
 
 @torch.no_grad()
@@ -70,7 +80,7 @@ def translate_and_reconstruct(nets, args, x_src, y_src, x_ref, y_ref, filename):
     x_rec = nets.generator(x_fake, s_src, masks=masks)
     x_concat = [x_src, x_ref, x_fake, x_rec]
     x_concat = torch.cat(x_concat, dim=0)
-    save_image(x_concat, N, filename)
+    save_image(x_concat, N, filename, img_type="cycle")
     del x_concat
 
 
@@ -95,7 +105,7 @@ def translate_using_latent(nets, args, x_src, y_trg_list, z_trg_list, psi, filen
             x_concat += [x_fake]
 
     x_concat = torch.cat(x_concat, dim=0)
-    save_image(x_concat, N, filename)
+    save_image(x_concat, N, filename, img_type="latent")
 
 
 @torch.no_grad()
@@ -114,7 +124,7 @@ def translate_using_reference(nets, args, x_src, x_ref, y_ref, filename):
         x_concat += [x_fake_with_ref]
 
     x_concat = torch.cat(x_concat, dim=0)
-    save_image(x_concat, N+1, filename)
+    save_image(x_concat, N+1, filename, img_type="reference")
     del x_concat
 
 
@@ -201,6 +211,7 @@ def video_ref(nets, args, x_src, x_ref, y_ref, fname):
     video = []
     s_ref = nets.style_encoder(x_ref, y_ref)
     s_prev = None
+    print("starting loop")
     for data_next in tqdm(zip(x_ref, y_ref, s_ref), 'video_ref', len(x_ref)):
         x_next, y_next, s_next = [d.unsqueeze(0) for d in data_next]
         if s_prev is None:
@@ -216,11 +227,16 @@ def video_ref(nets, args, x_src, x_ref, y_ref, fname):
         frames = torch.cat([slided, interpolated], dim=3).cpu()  # (T, C, 256*2, 256*(batch+1))
         video.append(frames)
         x_prev, y_prev, s_prev = x_next, y_next, s_next
-
+    print("finished loop")
     # append last frame 10 time
-    for _ in range(10):
-        video.append(frames[-1:])
+    try:
+        for _ in range(10):
+            video.append(frames_out[-1:])
+    except:
+        print("couldn't append 10 more frames")
+    print("finished video")
     video = tensor2ndarray255(torch.cat(video))
+    print("made video")
     save_video(fname, video)
 
 
@@ -261,6 +277,7 @@ def video_latent(nets, args, x_src, y_list, z_list, psi, fname):
 
 def save_video(fname, images, output_fps=30, vcodec='libx264', filters=''):
     assert isinstance(images, np.ndarray), "images should be np.array: NHWC"
+    print("saving video now!")
     num_frames, height, width, channels = images.shape
     stream = ffmpeg.input('pipe:', format='rawvideo', 
                           pix_fmt='rgb24', s='{}x{}'.format(width, height))
@@ -268,6 +285,7 @@ def save_video(fname, images, output_fps=30, vcodec='libx264', filters=''):
     stream = ffmpeg.output(stream, fname, pix_fmt='yuv420p', vcodec=vcodec, r=output_fps)
     stream = ffmpeg.overwrite_output(stream)
     process = ffmpeg.run_async(stream, pipe_stdin=True)
+    print("getting ready to ffmpeg")
     for frame in tqdm(images, desc='writing video to %s' % fname):
         process.stdin.write(frame.astype(np.uint8).tobytes())
     process.stdin.close()
@@ -275,5 +293,7 @@ def save_video(fname, images, output_fps=30, vcodec='libx264', filters=''):
 
 
 def tensor2ndarray255(images):
+    print("tensor2d")
     images = torch.clamp(images * 0.5 + 0.5, 0, 1)
+    print("exiting 2d")
     return images.cpu().numpy().transpose(0, 2, 3, 1) * 255
