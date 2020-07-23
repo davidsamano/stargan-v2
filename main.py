@@ -86,6 +86,8 @@ def main(args):
         # make temporary folders for images
         src_dir = "tmp_src"
         ref_dir = "tmp_ref"
+        full_src = src_dir + "/src"
+        full_ref = ref_dir + "/ref"
         for d in [src_dir, ref_dir]:
             if os.path.exists(d):
                 shutil.rmtree(d)
@@ -94,8 +96,8 @@ def main(args):
         os.mkdir(src_dir + "/src")
         os.mkdir(ref_dir + "/ref")
 
-        shutil.copy2(args.custom_src_img, src_dir)
-        shutil.copy2(args.custom_ref_img, ref_dir)
+        shutil.copy2(args.custom_src_img, full_src)
+        shutil.copy2(args.custom_ref_img, full_ref)
         loaders = Munch(src=get_test_loader(root=src_dir,
                                             img_size=args.img_size,
                                             batch_size=args.val_batch_size,
