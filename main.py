@@ -89,9 +89,14 @@ def main(args):
             src_dir = "tmp_src"
             full_src = src_dir + "/src"
             if os.path.exists(src_dir):
-                 shutil.rmtree(src_dir)
+                shutil.rmtree(src_dir)
             os.makedirs(full_src)
             shutil.copy2(args.custom_src, full_src)
+            if args.extend_domain:
+                # make some extra domains
+                for d in [src_dir + "/src2", src_dir+"/src3"]:
+                    os.makedirs(d)
+                    shutil.copy2(args.custom_src, d)
             src_images = src_dir
         else:
             src_images = args.custom_src
@@ -102,6 +107,11 @@ def main(args):
                 shutil.rmtree(ref_dir)
             os.makedirs(full_ref)
             shutil.copy2(args.custom_ref, full_ref)
+            if args.extend_domain:
+                # make some extra domains
+                for d in [ref_dir + "/ref2", ref_dir+"/ref3"]:
+                    os.makedirs(d)
+                    shutil.copy2(args.custom_ref, d)
             ref_images = ref_dir
         else:
             ref_images = args.custom_ref     
@@ -223,6 +233,7 @@ if __name__ == '__main__':
     parser.add_argument('-s', '--custom_src', type=str, default='stargan-v2/assets/representative/afhq/src') #assets/representative/afhq/src/cat/pixabay_cat_004826.jpg')
     parser.add_argument('-r', '--custom_ref', type=str, default='stargan-v2/assets/representative/afhq/ref') #wild/flickr_wild_003969.jpg')
     parser.add_argument('-o', '--custom_out_img', type=str, default='starganv2_cross.jpg')
-  
+    parser.add_argument('-x', '--extend_domain', type=int, default=0)
+ 
     args = parser.parse_args()
     main(args)
