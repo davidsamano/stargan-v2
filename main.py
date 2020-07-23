@@ -83,9 +83,11 @@ def main(args):
         align_faces(args, args.inp_dir, args.out_dir)
     elif args.mode == 'custom':
         os.mkdir("tmp_src")
+        os.mkdir("tmp_src/src")
         os.mkdir("tmp_ref")
-        shutil.copy2(args.custom_src_img, "tmp_src")
-        shutil.copy2(args.custom_ref_img, "tmp_ref")
+        os.mkdir("tmp_ref/ref")
+        shutil.copy2(args.custom_src_img, "tmp_src/src")
+        shutil.copy2(args.custom_ref_img, "tmp_ref/ref")
         loaders = Munch(src=get_test_loader(root="tmp_src",
                                             img_size=args.img_size,
                                             batch_size=args.val_batch_size,
