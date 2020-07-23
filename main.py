@@ -82,7 +82,7 @@ def main(args):
         from core.wing import align_faces
         align_faces(args, args.inp_dir, args.out_dir)
     elif args.mode == 'custom':
-        wandb.init(project="stargan", config=args)
+        wandb.init(project="stargan", config=args, name=args.model_name)
         # src or ref may each be a dir or an image
         # make temporary folders for images
         if os.path.isfile(args.custom_src):
