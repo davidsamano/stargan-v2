@@ -94,9 +94,9 @@ def main(args):
             shutil.copy2(args.custom_src, full_src)
             src_images = src_dir
         else:
-						src_images = args.custom_src
+            src_images = args.custom_src
         if os.path.isfile(args.custom_ref):
- 						ref_dir = "tmp_ref"
+            ref_dir = "tmp_ref"
             full_ref = ref_dir + "/ref"
             if os.path.exists(ref_dir):
                 shutil.rmtree(ref_dir)
