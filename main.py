@@ -33,9 +33,9 @@ def subdirs(dname):
 
 def main(args):
     print(args)
-    wandb.init(project="stargan", entity="stacey", config=args, name=args.model_name)
-    cfg = wandb.config
-    cfg.update({"dataset" : "afhq", "type" : "train"})
+    #wandb.init(project="stargan", entity="stacey", config=args, name=args.model_name)
+    #cfg = wandb.config
+    #cfg.update({"dataset" : "afhq", "type" : "train"})
     cudnn.benchmark = True
     torch.manual_seed(args.seed)
 
@@ -82,18 +82,22 @@ def main(args):
         from core.wing import align_faces
         align_faces(args, args.inp_dir, args.out_dir)
     elif args.mode == 'custom':
-        os.mkdir("tmp_src")
-        os.mkdir("tmp_src/src")
-        os.mkdir("tmp_ref")
-        os.mkdir("tmp_ref/ref")
-        shutil.copy2(args.custom_src_img, "tmp_src/src")
-        shutil.copy2(args.custom_ref_img, "tmp_ref/ref")
-        loaders = Munch(src=get_test_loader(root="tmp_src",
+        wandb.init(project="stargan", config=args)
+        # make temporary folders for images
+        src_dir = "tmp_src/src"
+        ref_dir = "tmp_ref/ref" 
+        for d in [src_dir, ref_dir]:
+            if os.path.exists(d):
+                shutil.rmtree(d)
+            os.makedirs(d)
+        shutil.copy2(args.custom_src_img, src_dir)
+        shutil.copy2(args.custom_ref_img, ref_dir)
+        loaders = Munch(src=get_test_loader(root=src_dir,
                                             img_size=args.img_size,
                                             batch_size=args.val_batch_size,
                                             shuffle=False,
                                             num_workers=args.num_workers),
-                        ref=get_test_loader(root="tmp_ref", #args.custom_ref_img,
+                        ref=get_test_loader(root=ref_dir, 
                                             img_size=args.img_size,
                                             batch_size=args.val_batch_size,
                                             shuffle=False,
