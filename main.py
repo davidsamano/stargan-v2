@@ -33,9 +33,9 @@ def subdirs(dname):
 
 def main(args):
     print(args)
-    #wandb.init(project="stargan", entity="stacey", config=args, name=args.model_name)
-    #cfg = wandb.config
-    #cfg.update({"dataset" : "afhq", "type" : "train"})
+    wandb.init(project="stargan", entity="stacey", config=args, name=args.model_name)
+    cfg = wandb.config
+    cfg.update({"dataset" : "afhq", "type" : "train"})
     cudnn.benchmark = True
     torch.manual_seed(args.seed)
 
@@ -160,7 +160,7 @@ if __name__ == '__main__':
                         help='Probabilty of using random-resized cropping')
     parser.add_argument('--total_iters', type=int, default=100000,
                         help='Number of total iterations')
-    parser.add_argument('--resume_iter', type=int, default=100000,
+    parser.add_argument('--resume_iter', type=int, default=0,
                         help='Iterations to resume training/testing')
     parser.add_argument('--batch_size', type=int, default=4,
                         help='Batch size for training')
@@ -195,7 +195,7 @@ if __name__ == '__main__':
                         help='Directory containing validation images')
     parser.add_argument('--sample_dir', type=str, default='expr/samples',
                         help='Directory for saving generated images')
-    parser.add_argument('--checkpoint_dir', type=str, default='stargan-v2/expr/checkpoints/afhq',
+    parser.add_argument('--checkpoint_dir', type=str, default='expr/checkpoints/afhq',
                         help='Directory for saving network checkpoints')
 
     # directory for calculating metrics
@@ -215,7 +215,7 @@ if __name__ == '__main__':
                         help='output directory when aligning faces')
 
     # face alignment
-    parser.add_argument('--wing_path', type=str, default='stargan-v2/expr/checkpoints/wing.ckpt')
+    parser.add_argument('--wing_path', type=str, default='expr/checkpoints/wing.ckpt')
     parser.add_argument('--lm_path', type=str, default='expr/checkpoints/celeba_lm_mean.npz')
 
     # step size
