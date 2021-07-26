@@ -83,6 +83,9 @@ def main(args):
         align_faces(args, args.inp_dir, args.out_dir)
     elif args.mode == 'custom':
         # override some default arguments
+        args.num_domains = 2
+        args.w_hpf = 1
+        args.checkpoint_dir = "stargan-v2/expr/checkpoints/celeba-hq"
         wandb.init(project="stargan", config=args, name=args.model_name)
         # src or ref may each be a dir or an image
         # make temporary folders for images
@@ -132,7 +135,7 @@ if __name__ == '__main__':
     # model arguments
     parser.add_argument('--img_size', type=int, default=256,
                         help='Image resolution')
-    parser.add_argument('--num_domains', type=int, default=3,
+    parser.add_argument('--num_domains', type=int, default=2,
                         help='Number of domains')
     parser.add_argument('--latent_dim', type=int, default=16,
                         help='Latent vector dimension')
@@ -152,7 +155,7 @@ if __name__ == '__main__':
                         help='Weight for diversity sensitive loss')
     parser.add_argument('--ds_iter', type=int, default=100000,
                         help='Number of iterations to optimize diversity sensitive loss')
-    parser.add_argument('--w_hpf', type=float, default=0,
+    parser.add_argument('--w_hpf', type=float, default=1,
                         help='weight for high-pass filtering')
 
     # training arguments
@@ -164,7 +167,7 @@ if __name__ == '__main__':
                         help='Iterations to resume training/testing')
     parser.add_argument('--batch_size', type=int, default=4,
                         help='Batch size for training')
-    parser.add_argument('--val_batch_size', type=int, default=32,
+    parser.add_argument('--val_batch_size', type=int, default=4,
                         help='Batch size for validation')
     parser.add_argument('--lr', type=float, default=1e-4,
                         help='Learning rate for D, E and G')
@@ -195,7 +198,7 @@ if __name__ == '__main__':
                         help='Directory containing validation images')
     parser.add_argument('--sample_dir', type=str, default='expr/samples',
                         help='Directory for saving generated images')
-    parser.add_argument('--checkpoint_dir', type=str, default='stargan-v2/expr/checkpoints/afhq',
+    parser.add_argument('--checkpoint_dir', type=str, default='stargan-v2/expr/checkpoints/celeba_hq',
                         help='Directory for saving network checkpoints')
 
     # directory for calculating metrics
@@ -220,16 +223,16 @@ if __name__ == '__main__':
 
     # step size
     parser.add_argument('--print_every', type=int, default=10)
-    parser.add_argument('--sample_every', type=int, default=2000)
-    parser.add_argument('--save_every', type=int, default=5000)
-    parser.add_argument('--eval_every', type=int, default=10000)
+    parser.add_argument('--sample_every', type=int, default=5000)
+    parser.add_argument('--save_every', type=int, default=10000)
+    parser.add_argument('--eval_every', type=int, default=50000)
     
     # wandb logging and demo
     parser.add_argument('-m', '--model_name', type=str, default="")
-    parser.add_argument('-s', '--custom_src', type=str, default='stargan-v2/assets/representative/afhq/src') #assets/representative/afhq/src/cat/pixabay_cat_004826.jpg')
-    parser.add_argument('-r', '--custom_ref', type=str, default='stargan-v2/assets/representative/afhq/ref') #wild/flickr_wild_003969.jpg')
+    parser.add_argument('-s', '--custom_src', type=str, default='stargan-v2/assets/representative/celeba_hq/src') #assets/representative/afhq/src/cat/pixabay_cat_004826.jpg')
+    parser.add_argument('-r', '--custom_ref', type=str, default='stargan-v2/assets/representative/celeba_hq/ref') #wild/flickr_wild_003969.jpg')
     parser.add_argument('-o', '--custom_out_img', type=str, default='starganv2_cross.jpg')
-    parser.add_argument('-x', '--extend_domain', type=int, default=1)
+    parser.add_argument('-x', '--extend_domain', type=int, default=0)
  
     args = parser.parse_args()
     main(args)

@@ -8,7 +8,7 @@ IMG = "reference.jpg"
 
 def upload():
   config = {
-    "dataset" : "afhq",
+    "dataset" : "celeba_hq",
     "type" : "eval-video", 
     "examples" : "chica_sample_flip"
   }
